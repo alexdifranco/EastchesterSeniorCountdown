@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Senior Events - Eastchester HS</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#1D4ED8">
+
+<style>
+  :root{
+    --bg-top:#0a0e1a;
+    --bg-bottom:#160a12;
+    --accent1:29,78,216;
+    --accent2:59,130,246;
+    --accent3:229,22,43;
+    --accent5:48,209,88;
+    --gold:#FFD60A;
+    --glass:rgba(255,255,255,0.07);
+    --glass-border:rgba(255,255,255,0.14);
+    --text-primary:#F5F5F7;
+    --text-secondary:rgba(235,235,245,0.6);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+  body{
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(var(--accent1),0.35), transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(var(--accent3),0.28), transparent 50%),
+      var(--bg-bottom);
+    background-attachment:fixed;
+    color:var(--text-primary);
+    min-height:100vh;
+    min-height:100dvh;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .wrap{ max-width:600px; margin:0 auto; padding:24px 18px 60px; }
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:13px; font-weight:600; color:var(--text-secondary);
+    text-decoration:none; margin-bottom:18px;
+  }
+  .badge{
+    display:inline-block; font-size:13px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--text-primary); background:var(--glass); border:1px solid var(--glass-border);
+    padding:6px 14px; border-radius:999px; margin-bottom:10px;
+  }
+  h1{ font-size:28px; font-weight:800; letter-spacing:-0.02em; margin:4px 0 4px; }
+  .subhead{ font-size:14px; color:var(--text-secondary); margin-bottom:20px; }
+
+  .info-banner{
+    background:var(--glass); border:1px solid var(--glass-border); border-radius:18px;
+    padding:14px 16px; font-size:12.5px; color:var(--text-secondary); line-height:1.6; margin-bottom:22px;
+  }
+  .info-banner strong{ color:var(--text-primary); }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .legend-chip{
+    display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+    padding:6px 12px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid var(--glass-border);
+  }
+  .legend-dot{ width:8px; height:8px; border-radius:50%; }
+
+  .month-heading{
+    font-size:15px; font-weight:800; letter-spacing:0.02em; text-transform:uppercase;
+    color:var(--text-secondary); margin:26px 0 10px 2px;
+  }
+
+  .event-card{
+    display:flex; align-items:center; gap:14px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); border-radius:18px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .event-card.highlight{
+    border-color:rgba(255,214,10,0.5);
+    background:linear-gradient(135deg, rgba(255,214,10,0.12), rgba(255,255,255,0.05));
+  }
+  .date-chip{
+    flex-shrink:0; width:52px; height:52px; border-radius:14px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--glass-border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .date-chip .dow{ font-size:9.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-secondary); }
+  .date-chip .day{ font-size:19px; font-weight:800; line-height:1.1; }
+
+  .event-info{ flex:1; min-width:0; }
+  .event-title{ font-size:14.5px; font-weight:700; margin-bottom:2px; }
+  .event-meta{ font-size:12px; color:var(--text-secondary); }
+
+  .cat-tag{
+    flex-shrink:0; font-size:15px; width:30px; height:30px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.06);
+  }
+
+  .empty-note{
+    text-align:center; color:var(--text-secondary); font-size:13px; padding:20px; font-style:italic;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="index.html">← Back to Countdown</a>
+  <div class="badge">Class of 2027</div>
+  <h1>Senior Events</h1>
+  <div class="subhead">Eastchester High School</div>
+
+  <div class="legend" id="legend"></div>
+
+  <div id="eventList"></div>
+</div>
+
+<script>
+/* ======================================================================
+   EDIT EVENTS HERE. Each event is one line below.
+   Fields: date ("YYYY-MM-DD"), time (string, or null for all-day),
+           title (string), category (one of the keys in CATEGORIES below).
+   To add an event: copy any line, change the values, keep the comma.
+   To add a new category: add a key to CATEGORIES with an icon + color.
+   ====================================================================== */
+
+  const CATEGORIES = {
+    photo:    { icon: '📸', color: '99,102,241', label: 'Photos' },
+    social:   { icon: '🎉', color: '236,72,153', label: 'Social / Shows' },
+    sports:   { icon: '🏆', color: '234,88,12',  label: 'Sports' },
+    college:  { icon: '🎓', color: '16,185,129', label: 'College / Career' },
+    test:     { icon: '📝', color: '59,130,246', label: 'Testing' },
+    milestone:{ icon: '⭐', color: '255,214,10', label: 'Milestone' }
+  };
+
+  const SENIOR_EVENTS = [
+    { date: '2026-09-19', time: '9:00 AM – 2:00 PM',   title: 'Senior Portraits',                          category: 'photo' },
+    { date: '2026-09-26', time: '9:00 AM – 2:00 PM',   title: 'Senior Portraits',                          category: 'photo' },
+    { date: '2026-09-28', time: '6:30 PM – 8:30 PM',   title: 'College Fair (Pelham Memorial HS)',         category: 'college' },
+    { date: '2026-10-03', time: '7:00 AM – 1:00 PM',   title: 'SAT Exam',                                  category: 'test' },
+    { date: '2026-10-13', time: '2:45 PM – 3:15 PM',   title: 'Senior Picture Rehearsal',                  category: 'photo' },
+    { date: '2026-10-14', time: '8:15 AM – 9:30 AM',   title: 'Senior Class Group Photo',                  category: 'photo' },
+    { date: '2026-10-14', time: '4:00 PM – 5:00 PM',   title: 'Cheer Tournament',                          category: 'sports' },
+    { date: '2026-10-15', time: '8:15 AM – 9:30 AM',   title: 'Senior Group Photo (Rain Date)',            category: 'photo' },
+    { date: '2026-10-16', time: '10:00 AM – 11:00 AM', title: 'Fall Homecoming Pep Rally',                 category: 'social' },
+    { date: '2026-10-16', time: '7:00 PM – 9:00 PM',   title: 'Homecoming — Varsity Football Game',        category: 'sports' },
+    { date: '2026-10-17', time: '7:00 AM – 1:00 PM',   title: 'ACT Exam',                                  category: 'test' },
+    { date: '2026-10-17', time: '5:00 PM – 8:30 PM',   title: 'Homecoming Soccer (Boys & Girls Varsity)',  category: 'sports' },
+    { date: '2026-10-21', time: '7:00 PM – 8:30 PM',   title: 'Financial Aid Night',                       category: 'college' },
+    { date: '2026-10-24', time: null,                  title: 'HS Six Flags Trip',                         category: 'social' },
+    { date: '2026-11-05', time: '7:00 PM – 9:00 PM',   title: 'Careers in Business Night',                 category: 'college' },
+    { date: '2026-11-06', time: null,                  title: 'Fashion Show Rehearsal',                    category: 'social' },
+    { date: '2026-11-07', time: '7:00 AM – 1:00 PM',   title: 'SAT Exam',                                  category: 'test' },
+    { date: '2026-11-09', time: null,                  title: 'Fashion Show Rehearsal',                    category: 'social' },
+    { date: '2026-11-10', time: '6:30 PM – 7:30 PM',   title: 'PTA Senior Fashion Show',                   category: 'social' },
+    { date: '2026-12-03', time: '5:00 PM – 9:00 PM',   title: 'Holiday Basketball Tournament',              category: 'sports' },
+    { date: '2026-12-04', time: '5:00 PM – 9:00 PM',   title: 'Holiday Basketball Tournament',              category: 'sports' },
+    { date: '2026-12-05', time: '11:30 AM – 2:30 PM',  title: 'Holiday Basketball Tournament',              category: 'sports' },
+
+    // ---- Add spring events here once the district publishes them ----
+    // { date: '2027-05-__', time: null, title: 'Prom', category: 'social' },
+    // { date: '2027-06-__', time: null, title: 'Senior Awards Night', category: 'milestone' },
+
+    { date: '2027-06-25', time: '7:00 PM', title: 'Graduation Ceremony', category: 'milestone' }
+  ];
+
+/* ====================================================================== */
+
+  // pull in the user's personal Last Exam/Class date from the countdown page, if set
+  (function addPersonalLastDay(){
+    try{
+      const raw = localStorage.getItem('lastDayOfClass');
+      if(raw){
+        const d = new Date(raw);
+        if(!isNaN(d.getTime())){
+          const iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          const time = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+          SENIOR_EVENTS.push({ date: iso, time: time, title: 'Your Last Exam/Class', category: 'milestone' });
+        }
+      }
+    }catch(e){}
+  })();
+
+  SENIOR_EVENTS.sort((a,b)=> a.date.localeCompare(b.date));
+
+  // ---- render legend ----
+  const legendEl = document.getElementById('legend');
+  Object.values(CATEGORIES).forEach(c=>{
+    const chip = document.createElement('div');
+    chip.className = 'legend-chip';
+    chip.innerHTML = `<span class="legend-dot" style="background:rgb(${c.color})"></span>${c.icon} ${c.label}`;
+    legendEl.appendChild(chip);
+  });
+
+  // ---- render events grouped by month ----
+  const listEl = document.getElementById('eventList');
+  const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  if(SENIOR_EVENTS.length === 0){
+    listEl.innerHTML = '<div class="empty-note">No events yet — add some to the SENIOR_EVENTS list.</div>';
+  } else {
+    let currentMonthKey = '';
+    SENIOR_EVENTS.forEach(ev=>{
+      const [y,m,d] = ev.date.split('-').map(Number);
+      const dateObj = new Date(y, m-1, d);
+      const monthKey = y+'-'+m;
+      if(monthKey !== currentMonthKey){
+        currentMonthKey = monthKey;
+        const h = document.createElement('div');
+        h.className = 'month-heading';
+        h.textContent = MONTHS[m-1] + ' ' + y;
+        listEl.appendChild(h);
+      }
+      const cat = CATEGORIES[ev.category] || CATEGORIES.social;
+      const card = document.createElement('div');
+      card.className = 'event-card' + (ev.category === 'milestone' ? ' highlight' : '');
+      card.innerHTML = `
+        <div class="date-chip">
+          <div class="dow">${DOW[dateObj.getDay()]}</div>
+          <div class="day">${d}</div>
+        </div>
+        <div class="event-info">
+          <div class="event-title">${ev.title}</div>
+          <div class="event-meta">${ev.time ? ev.time : 'All day'}</div>
+        </div>
+        <div class="cat-tag" style="background:rgba(${cat.color},0.18)">${cat.icon}</div>
+      `;
+      listEl.appendChild(card);
+    });
+  }
+</script>
+</body>
+</html>

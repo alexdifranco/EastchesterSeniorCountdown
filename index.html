@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Senior Countdown</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1D4ED8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Senior Countdown">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+
+<style>
+  :root{
+    --bg-top:#0a0e1a;
+    --bg-bottom:#160a12;
+    --accent1-rgb:29,78,216;    /* primary theme color */
+    --accent2-rgb:59,130,246;   /* secondary theme color */
+    --accent3-rgb:229,22,43;    /* tertiary theme color */
+    --accent5-rgb:48,209,88;    /* flair/green-ish theme color */
+    --accent4:#FFD60A;          /* gold - graduation, stays constant across themes */
+    --glass:rgba(255,255,255,0.07);
+    --glass-border:rgba(255,255,255,0.14);
+    --text-primary:#F5F5F7;
+    --text-secondary:rgba(235,235,245,0.6);
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{ height:100%; margin:0; overscroll-behavior:none; }
+
+  body{
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(var(--accent1-rgb),0.5), transparent 50%),
+      radial-gradient(circle at 90% 15%, rgba(var(--accent2-rgb),0.35), transparent 45%),
+      radial-gradient(circle at 10% 85%, rgba(var(--accent3-rgb),0.38), transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(var(--accent5-rgb),0.25), transparent 50%),
+      var(--bg-bottom);
+    background-attachment:fixed;
+    color:var(--text-primary);
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  .gear-btn{
+    position:fixed;
+    top:calc(env(safe-area-inset-top) + 16px);
+    right:calc(env(safe-area-inset-right) + 16px);
+    z-index:20;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:1px solid var(--glass-border);
+    background:var(--glass);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--text-primary);
+    transition:transform .15s ease;
+  }
+  .gear-btn:active{ transform:scale(0.9); }
+  .gear-btn svg{ width:20px; height:20px; }
+
+  .load-events-btn{
+    width:100%;
+    margin-top:22px;
+    border:none;
+    outline:none;
+    background:linear-gradient(135deg, #16A34A, #22C55E);
+    color:#fff;
+    font-weight:800;
+    font-size:19px;
+    padding:19px 20px;
+    border-radius:20px;
+    cursor:pointer;
+    box-shadow:0 16px 40px rgba(22,163,74,0.4);
+    transition:transform .15s ease;
+  }
+  .load-events-btn:active{ transform:scale(0.97); }
+
+  .events-inline{
+    width:100%;
+    margin-top:16px;
+    text-align:left;
+  }
+
+  .events-month{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    margin:18px 2px 8px;
+  }
+  .events-month:first-child{ margin-top:4px; }
+
+  .event-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .event-row.highlight{
+    border-color:rgba(255,214,10,0.5);
+    background:linear-gradient(135deg, rgba(255,214,10,0.12), rgba(255,255,255,0.05));
+  }
+  .event-date-chip{
+    flex-shrink:0; width:44px; height:44px; border-radius:12px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--glass-border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .event-date-chip .dow{ font-size:8.5px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-secondary); }
+  .event-date-chip .day{ font-size:16px; font-weight:800; line-height:1.1; }
+  .event-row-info{ flex:1; min-width:0; text-align:left; }
+  .event-row-title{ font-size:13.5px; font-weight:700; }
+  .event-row-meta{ font-size:11px; color:var(--text-secondary); margin-top:1px; }
+  .event-row-icon{ flex-shrink:0; font-size:14px; }
+
+  .hide-events-btn{
+    width:100%;
+    margin-top:22px;
+    border:none;
+    outline:none;
+    background:linear-gradient(135deg, #DC2626, #EF4444);
+    color:#fff;
+    font-weight:800;
+    font-size:19px;
+    padding:19px 20px;
+    border-radius:20px;
+    cursor:pointer;
+    box-shadow:0 16px 40px rgba(220,38,38,0.4);
+    transition:transform .15s ease;
+  }
+  .hide-events-btn:active{ transform:scale(0.97); }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:520px;
+    padding:28px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+
+  .badge{
+    margin-top:8px;
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--text-primary);
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    padding:9px 20px;
+    border-radius:999px;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+  }
+
+  h1{
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    color:var(--text-secondary);
+    margin:14px 0 2px;
+    text-transform:uppercase;
+  }
+
+  .school{
+    font-size:34px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    line-height:1.08;
+    margin-bottom:14px;
+    background:linear-gradient(100deg, #fff 20%, rgb(var(--accent2-rgb)) 55%, rgb(var(--accent3-rgb)) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .section-label{
+    width:100%;
+    text-align:left;
+    font-size:19px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    color:var(--text-primary);
+    margin:28px 0 12px 2px;
+  }
+
+  .card{
+    width:100%;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:28px;
+    padding:26px 18px 22px;
+    backdrop-filter:blur(30px);
+    -webkit-backdrop-filter:blur(30px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+
+  .card.grad .num{
+    background:linear-gradient(180deg,#fff 5%, #ffdb8c 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+  }
+
+  .unit{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:14px 4px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .num{
+    font-size:clamp(26px, 7.5vw, 38px);
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-0.02em;
+    background:linear-gradient(180deg,#fff, #c9c9e8);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    line-height:1.05;
+  }
+
+  .label{
+    margin-top:4px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+  }
+
+  .progress-wrap{ margin-top:20px; }
+
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--text-secondary);
+    margin-bottom:8px;
+    font-weight:600;
+  }
+
+  .progress-bar{
+    height:10px;
+    width:100%;
+    border-radius:999px;
+    background:rgba(255,255,255,0.08);
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+
+  .progress-fill{
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,rgb(var(--accent1-rgb)),rgb(var(--accent2-rgb)));
+    transition:width .6s ease;
+  }
+
+  .progress-fill.grad{
+    background:linear-gradient(90deg,var(--accent4),rgb(var(--accent3-rgb)));
+  }
+
+  .card2{
+    width:100%;
+    margin-top:16px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:24px;
+    padding:18px 20px;
+    backdrop-filter:blur(30px);
+    -webkit-backdrop-filter:blur(30px);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .card2 .left{ text-align:left; }
+  .card2 .title{ font-size:14px; font-weight:700; color:var(--text-primary); }
+  .card2 .sub{ font-size:14px; font-weight:700; color:var(--text-primary); margin-top:2px; }
+  .card2 .big{
+    font-size:34px;
+    font-weight:800;
+    background:linear-gradient(135deg,var(--accent4),rgb(var(--accent3-rgb)));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---- graduation hero card ---- */
+  .grad-hero{
+    width:100%;
+    margin-top:16px;
+    border-radius:28px;
+    padding:28px 22px 26px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(255,214,10,0.25), transparent 55%),
+      radial-gradient(circle at 90% 100%, rgba(var(--accent3-rgb),0.3), transparent 55%),
+      linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+    border:1.5px solid rgba(255,214,10,0.4);
+    box-shadow:0 25px 70px rgba(0,0,0,0.4);
+  }
+  .grad-hero .cap-icon{ font-size:32px; margin-bottom:8px; }
+  .grad-hero .eyebrow{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:#FFD60A;
+    margin-bottom:10px;
+  }
+  .grad-hero .huge-date{
+    font-size:clamp(38px, 12vw, 56px);
+    font-weight:900;
+    letter-spacing:-0.02em;
+    line-height:1;
+    background:linear-gradient(135deg,#fff 10%, #FFD60A 55%, rgb(var(--accent3-rgb)) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    margin-bottom:8px;
+  }
+  .grad-hero .time-year{
+    font-size:16px;
+    font-weight:700;
+    color:var(--text-primary);
+    opacity:0.9;
+  }
+
+  .credit{
+    margin-top:26px;
+    margin-bottom:6px;
+    font-size:12px;
+    color:var(--text-secondary);
+    font-weight:500;
+    letter-spacing:0.02em;
+  }
+
+  .pulse{ animation:pulse .4s ease; }
+  @keyframes pulse{
+    0%{ transform:scale(1); }
+    30%{ transform:scale(1.12); }
+    100%{ transform:scale(1); }
+  }
+
+  .confetti-piece{
+    position:fixed;
+    top:-10px;
+    z-index:50;
+    border-radius:2px;
+    pointer-events:none;
+    animation-name:fall;
+    animation-timing-function:linear;
+    animation-fill-mode:forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:0.3; }
+  }
+
+  /* ---- modal: theme + last exam/class date ---- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:rgba(5,6,12,0.72);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-overlay.show{ display:flex; }
+
+  .modal-card{
+    width:100%;
+    max-width:380px;
+    max-height:88vh;
+    overflow-y:auto;
+    background:linear-gradient(180deg, rgba(30,32,48,0.96), rgba(18,18,28,0.98));
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:26px;
+    padding:26px 22px 22px;
+    text-align:left;
+    box-shadow:0 30px 80px rgba(0,0,0,0.55);
+    position:relative;
+  }
+
+  .modal-close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.14);
+    color:var(--text-secondary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+
+  .modal-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    background:linear-gradient(135deg,rgb(var(--accent1-rgb)),rgb(var(--accent3-rgb)));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    margin-bottom:14px;
+    box-shadow:0 10px 24px rgba(0,0,0,0.35);
+  }
+
+  .modal-title{
+    font-size:19px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin-bottom:4px;
+  }
+
+  .modal-sub{
+    font-size:13px;
+    color:var(--text-secondary);
+    line-height:1.5;
+    margin-bottom:18px;
+  }
+
+  .field-group{ margin-bottom:14px; }
+
+  .field-label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    margin-bottom:7px;
+  }
+
+  .field-input{
+    width:100%;
+    background:rgba(255,255,255,0.06);
+    border:1.5px solid rgba(255,255,255,0.14);
+    border-radius:14px;
+    padding:13px 14px;
+    color:var(--text-primary);
+    font-size:16px;
+    font-weight:600;
+    font-family:inherit;
+    color-scheme:dark;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .field-input:focus{
+    outline:none;
+    border-color:rgb(var(--accent2-rgb));
+    background:rgba(255,255,255,0.1);
+  }
+
+  .theme-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:4px;
+  }
+
+  .theme-swatch{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    border:2px solid transparent;
+    cursor:pointer;
+    position:relative;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .theme-swatch:active{ transform:scale(0.92); }
+  .theme-swatch.selected{
+    border-color:#fff;
+  }
+  .theme-swatch.selected::after{
+    content:'✓';
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    text-shadow:0 1px 4px rgba(0,0,0,0.5);
+  }
+
+  .modal-save{
+    margin-top:6px;
+    width:100%;
+    border:none;
+    outline:none;
+    background:linear-gradient(135deg,#30D158,rgb(var(--accent2-rgb)));
+    color:#08210f;
+    font-weight:800;
+    font-size:15px;
+    padding:14px 20px;
+    border-radius:15px;
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .modal-save:active{ transform:scale(0.97); }
+
+  @media (max-width:360px){
+    .num{ font-size:24px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="gear-btn" id="gearBtn" aria-label="Settings">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</button>
+
+<div class="wrap">
+  <div class="badge">Class of 2027 🎓</div>
+  <h1>Senior Countdown</h1>
+  <div class="school">Eastchester High School</div>
+
+  <div class="section-label">Last Exam/Class</div>
+  <div class="card">
+    <div class="grid">
+      <div class="unit"><div class="num" id="lastDays">00</div><div class="label">Days</div></div>
+      <div class="unit"><div class="num" id="lastHours">00</div><div class="label">Hours</div></div>
+      <div class="unit"><div class="num" id="lastMinutes">00</div><div class="label">Mins</div></div>
+      <div class="unit"><div class="num" id="lastSeconds">00</div><div class="label">Secs</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Senior year progress</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card2">
+    <div class="left">
+      <div class="title">School days left</div>
+      <div class="sub">Until Last Exam/Class</div>
+    </div>
+    <div class="big" id="schoolDays">--</div>
+  </div>
+
+  <div class="section-label">Graduation</div>
+  <div class="card grad">
+    <div class="grid">
+      <div class="unit"><div class="num" id="gradDays">00</div><div class="label">Days</div></div>
+      <div class="unit"><div class="num" id="gradHours">00</div><div class="label">Hours</div></div>
+      <div class="unit"><div class="num" id="gradMinutes">00</div><div class="label">Mins</div></div>
+      <div class="unit"><div class="num" id="gradSeconds">00</div><div class="label">Secs</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Progress to graduation</span>
+        <span id="progressPctGrad">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill grad" id="progressFillGrad" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card2">
+    <div class="left">
+      <div class="title">School days left</div>
+      <div class="sub">Until Graduation</div>
+    </div>
+    <div class="big" id="schoolDaysGrad">--</div>
+  </div>
+
+  <div class="grad-hero">
+    <div class="cap-icon">🎓</div>
+    <div class="eyebrow">Graduation Day</div>
+    <div class="huge-date" id="gradHugeDate">JUNE 25</div>
+    <div class="time-year" id="gradTimeYear">7:00 PM · 2027</div>
+  </div>
+
+  <button class="load-events-btn" id="loadEventsBtn">📅 Load Senior Events</button>
+  <button class="hide-events-btn" id="hideEventsBtn" style="display:none;">✕ Hide Events</button>
+  <div class="events-inline" id="eventsInline" style="display:none;"></div>
+
+  <div class="credit">Developed by Alex DiFranco</div>
+</div>
+
+<!-- Settings modal: theme + Last Exam/Class date -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose" aria-label="Close" style="display:none;">✕</button>
+    <div class="modal-icon">⚙️</div>
+    <div class="modal-title" id="modalTitle">Welcome!</div>
+    <div class="modal-sub" id="modalSub">Pick a theme and set your last exam/class date. Both are saved on your device.</div>
+
+    <div class="field-group">
+      <div class="field-label">🎨 Theme</div>
+      <div class="theme-row" id="themeRow"></div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">📅 Date</div>
+      <input type="date" class="field-input" id="lastDayDate">
+    </div>
+    <div class="field-group">
+      <div class="field-label">🕐 Time</div>
+      <input type="time" class="field-input" id="lastDayTime">
+    </div>
+
+    <button type="button" class="modal-save" id="saveLastDay">Save</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'lastDayOfClass';
+  const THEME_KEY = 'appTheme';
+
+  const THEMES = [
+    { id:'eagles', name:'Eagles', c1:'29,78,216',  c2:'59,130,246',  c3:'229,22,43',  c5:'48,209,88' },
+    { id:'ocean',  name:'Ocean',  c1:'2,132,199',  c2:'14,165,164',  c3:'6,182,212',  c5:'52,211,153' },
+    { id:'sunset', name:'Sunset', c1:'234,88,12',  c2:'249,115,22',  c3:'236,72,153', c5:'250,204,21' },
+    { id:'forest', name:'Forest', c1:'21,128,61',  c2:'22,163,74',   c3:'132,204,22', c5:'250,204,21' },
+    { id:'galaxy', name:'Galaxy', c1:'109,40,217',  c2:'139,92,246',  c3:'219,39,119', c5:'56,189,248' },
+    { id:'mono',   name:'Black & White', c1:'60,60,60', c2:'160,160,160', c3:'230,230,230', c5:'110,110,110' }
+  ];
+
+  function applyTheme(themeId){
+    const t = THEMES.find(x=>x.id===themeId) || THEMES[0];
+    const root = document.documentElement;
+    root.style.setProperty('--accent1-rgb', t.c1);
+    root.style.setProperty('--accent2-rgb', t.c2);
+    root.style.setProperty('--accent3-rgb', t.c3);
+    root.style.setProperty('--accent5-rgb', t.c5);
+  }
+
+  function loadTheme(){
+    try{ return localStorage.getItem(THEME_KEY) || 'eagles'; }catch(e){ return 'eagles'; }
+  }
+  function saveTheme(id){
+    try{ localStorage.setItem(THEME_KEY, id); }catch(e){}
+  }
+
+  let currentTheme = loadTheme();
+  applyTheme(currentTheme);
+
+  // build theme swatches
+  const themeRow = document.getElementById('themeRow');
+  THEMES.forEach(t=>{
+    const sw = document.createElement('div');
+    sw.className = 'theme-swatch' + (t.id === currentTheme ? ' selected' : '');
+    sw.style.background = `linear-gradient(135deg, rgb(${t.c1}), rgb(${t.c3}))`;
+    sw.title = t.name;
+    sw.dataset.theme = t.id;
+    sw.addEventListener('click', ()=>{
+      currentTheme = t.id;
+      applyTheme(t.id);
+      saveTheme(t.id);
+      document.querySelectorAll('.theme-swatch').forEach(el=> el.classList.remove('selected'));
+      sw.classList.add('selected');
+    });
+    themeRow.appendChild(sw);
+  });
+
+  function getSchoolYear(){
+    const now = new Date();
+    const y = now.getFullYear();
+    const septStart = new Date(y, 8, 2, 0, 0, 0, 0);
+    if(now.getTime() >= septStart.getTime()){
+      return { startYear: y, endYear: y + 1 };
+    }
+    return { startYear: y - 1, endYear: y };
+  }
+
+  const { startYear, endYear } = getSchoolYear();
+  const seniorYearStart = new Date(startYear, 8, 2, 0, 0, 0, 0);
+  const defaultLastDay = new Date(endYear, 4, 10, 12, 0, 0, 0);
+  const graduationDate = new Date(endYear, 5, 25, 19, 0, 0, 0);
+
+  document.getElementById('gradHugeDate').textContent = 'JUNE 25';
+  document.getElementById('gradTimeYear').textContent = `7:00 PM · ${endYear}`;
+
+  function hasSavedDate(){
+    try{ return !!localStorage.getItem(STORAGE_KEY); }catch(e){ return false; }
+  }
+
+  function loadLastDay(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const d = new Date(raw);
+        if(!isNaN(d.getTime())) return d;
+      }
+    }catch(e){}
+    return defaultLastDay;
+  }
+
+  function saveLastDay(d){
+    try{ localStorage.setItem(STORAGE_KEY, d.toISOString()); }catch(e){}
+  }
+
+  let lastDay = loadLastDay();
+  const isFirstRun = !hasSavedDate();
+  let isFirstRunActive = isFirstRun;
+
+  // ---- modal wiring ----
+  const overlay = document.getElementById('modalOverlay');
+  const closeBtn = document.getElementById('modalClose');
+  const gearBtn = document.getElementById('gearBtn');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSub = document.getElementById('modalSub');
+  const dateInput = document.getElementById('lastDayDate');
+  const timeInput = document.getElementById('lastDayTime');
+
+  function fillInputsFromDate(d){
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    timeInput.value = `${hh}:${min}`;
+  }
+  fillInputsFromDate(lastDay);
+
+  function openModal(firstRun){
+    if(firstRun){
+      modalTitle.textContent = 'Welcome!';
+      modalSub.textContent = "Pick a theme and set the date/time of your last exam or class. Both are saved right on your device.";
+      closeBtn.style.display = 'none';
+    } else {
+      modalTitle.textContent = 'Settings';
+      modalSub.textContent = "Change your theme or your last exam/class date. Saved on your device only.";
+      closeBtn.style.display = 'flex';
+    }
+    overlay.classList.add('show');
+  }
+
+  function closeModal(){
+    overlay.classList.remove('show');
+  }
+
+  gearBtn.addEventListener('click', ()=> openModal(false));
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{
+    if(e.target === overlay && !isFirstRunActive) closeModal();
+  });
+
+  if(isFirstRun){
+    openModal(true);
+  }
+
+  document.getElementById('saveLastDay').addEventListener('click', ()=>{
+    const dv = dateInput.value;
+    const tv = timeInput.value || '12:00';
+    if(!dv) return;
+    const [yy,mo,da] = dv.split('-').map(Number);
+    const [hh,mi] = tv.split(':').map(Number);
+    const newDate = new Date(yy, mo-1, da, hh, mi, 0, 0);
+    lastDay = newDate;
+    saveLastDay(newDate);
+    isFirstRunActive = false;
+    closeModal();
+  });
+
+  // ---- elements ----
+  const lastDays = document.getElementById('lastDays');
+  const lastHours = document.getElementById('lastHours');
+  const lastMinutes = document.getElementById('lastMinutes');
+  const lastSeconds = document.getElementById('lastSeconds');
+
+  const gradDays = document.getElementById('gradDays');
+  const gradHours = document.getElementById('gradHours');
+  const gradMinutes = document.getElementById('gradMinutes');
+  const gradSeconds = document.getElementById('gradSeconds');
+
+  const schoolDaysEl = document.getElementById('schoolDays');
+  const schoolDaysGradEl = document.getElementById('schoolDaysGrad');
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
+  const progressFillGrad = document.getElementById('progressFillGrad');
+  const progressPctGrad = document.getElementById('progressPctGrad');
+
+  let lastSecond = -1;
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  const SCHOOL_HOLIDAYS = new Set([
+    '2026-09-01','2026-09-07','2026-09-21','2026-10-12','2026-11-03','2026-11-11',
+    '2026-11-26','2026-11-27','2026-12-24','2026-12-25','2026-12-28','2026-12-29',
+    '2026-12-30','2026-12-31','2027-01-01','2027-01-18','2027-02-15','2027-02-16',
+    '2027-02-17','2027-02-18','2027-02-19','2027-03-22','2027-03-23','2027-03-24',
+    '2027-03-25','2027-03-26','2027-04-21','2027-04-22','2027-05-31','2027-06-18'
+  ]);
+
+  function isoDate(d){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function countSchoolDays(from, to){
+    let count = 0;
+    let d = new Date(from);
+    d.setHours(0,0,0,0);
+    const end = new Date(to);
+    end.setHours(0,0,0,0);
+    while(d < end){
+      const day = d.getDay();
+      if(day !== 0 && day !== 6 && !SCHOOL_HOLIDAYS.has(isoDate(d))) count++;
+      d.setDate(d.getDate()+1);
+    }
+    return count;
+  }
+
+  function launchConfetti(){
+    const colors = ['#1D4ED8','#3B82F6','#E5162B','#FFD60A','#30D158'];
+    for(let i=0;i<80;i++){
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const size = 6 + Math.random()*6;
+      el.style.width = size+'px';
+      el.style.height = (size*1.4)+'px';
+      el.style.left = Math.random()*100+'vw';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      const duration = 3 + Math.random()*2.5;
+      el.style.animationDuration = duration+'s';
+      el.style.animationDelay = (Math.random()*0.6)+'s';
+      document.body.appendChild(el);
+      setTimeout(()=> el.remove(), (duration+1)*1000);
+    }
+  }
+
+  function breakdown(diffMs){
+    const totalSeconds = Math.max(0, Math.floor(diffMs/1000));
+    return {
+      days: Math.floor(totalSeconds / 86400),
+      hours: Math.floor((totalSeconds % 86400)/3600),
+      minutes: Math.floor((totalSeconds % 3600)/60),
+      seconds: totalSeconds % 60
+    };
+  }
+
+  function tick(){
+    const now = new Date();
+
+    const lastDiff = lastDay.getTime() - now.getTime();
+    const lb = breakdown(lastDiff);
+    lastDays.textContent = lastDiff > 0 ? lb.days : 0;
+    lastHours.textContent = pad(lastDiff > 0 ? lb.hours : 0);
+    lastMinutes.textContent = pad(lastDiff > 0 ? lb.minutes : 0);
+    if(lb.seconds !== lastSecond){
+      lastSeconds.textContent = pad(lastDiff > 0 ? lb.seconds : 0);
+      lastSeconds.classList.remove('pulse');
+      void lastSeconds.offsetWidth;
+      lastSeconds.classList.add('pulse');
+      lastSecond = lb.seconds;
+    }
+
+    const gradDiff = graduationDate.getTime() - now.getTime();
+    const gb = breakdown(gradDiff);
+    gradDays.textContent = gradDiff > 0 ? gb.days : 0;
+    gradHours.textContent = pad(gradDiff > 0 ? gb.hours : 0);
+    gradMinutes.textContent = pad(gradDiff > 0 ? gb.minutes : 0);
+    gradSeconds.textContent = pad(gradDiff > 0 ? gb.seconds : 0);
+
+    schoolDaysEl.textContent = lastDiff > 0 ? countSchoolDays(now, lastDay) : 0;
+    schoolDaysGradEl.textContent = gradDiff > 0 ? countSchoolDays(now, graduationDate) : 0;
+
+    const totalSpan = lastDay.getTime() - seniorYearStart.getTime();
+    const elapsed = now.getTime() - seniorYearStart.getTime();
+    let pct = totalSpan > 0 ? Math.min(100, Math.max(0, (elapsed/totalSpan)*100)) : 100;
+    progressFill.style.width = pct.toFixed(1)+'%';
+    progressPct.textContent = Math.floor(pct)+'%';
+
+    const totalSpanGrad = graduationDate.getTime() - seniorYearStart.getTime();
+    let pctGrad = totalSpanGrad > 0 ? Math.min(100, Math.max(0, (elapsed/totalSpanGrad)*100)) : 100;
+    progressFillGrad.style.width = pctGrad.toFixed(1)+'%';
+    progressPctGrad.textContent = Math.floor(pctGrad)+'%';
+
+    const milestones = [100,50,30,10,7,1];
+    milestones.forEach(m=>{
+      const key = 'confetti_'+m;
+      if(lb.days === m && lastDiff > 0 && !sessionStorage.getItem(key)){
+        launchConfetti();
+        sessionStorage.setItem(key,'1');
+      }
+    });
+  }
+
+  tick();
+  setInterval(tick, 1000);
+
+  // ---- Senior Events (inline, loaded on demand) ----
+  const EVENT_CATEGORIES = {
+    photo:    { icon: '📸', color: '99,102,241' },
+    social:   { icon: '🎉', color: '236,72,153' },
+    sports:   { icon: '🏆', color: '234,88,12'  },
+    college:  { icon: '🎓', color: '16,185,129' },
+    test:     { icon: '📝', color: '59,130,246' },
+    milestone:{ icon: '⭐', color: '255,214,10' }
+  };
+
+  const SENIOR_EVENTS = [
+    { date: '2026-09-19', time: '9:00 AM – 2:00 PM',   title: 'Senior Portraits',                          category: 'photo' },
+    { date: '2026-09-26', time: '9:00 AM – 2:00 PM',   title: 'Senior Portraits',                          category: 'photo' },
+    { date: '2026-09-28', time: '6:30 PM – 8:30 PM',   title: 'College Fair (Pelham Memorial HS)',         category: 'college' },
+    { date: '2026-10-03', time: '7:00 AM – 1:00 PM',   title: 'SAT Exam',                                  category: 'test' },
+    { date: '2026-10-13', time: '2:45 PM – 3:15 PM',   title: 'Senior Picture Rehearsal',                  category: 'photo' },
+    { date: '2026-10-14', time: '8:15 AM – 9:30 AM',   title: 'Senior Class Group Photo',                  category: 'photo' },
+    { date: '2026-10-14', time: '4:00 PM – 5:00 PM',   title: 'Cheer Tournament',                          category: 'sports' },
+    { date: '2026-10-15', time: '8:15 AM – 9:30 AM',   title: 'Senior Group Photo (Rain Date)',            category: 'photo' },
+    { date: '2026-10-16', time: '10:00 AM – 11:00 AM', title: 'Fall Homecoming Pep Rally',                 category: 'social' },
+    { date: '2026-10-16', time: '7:00 PM – 9:00 PM',   title: 'Homecoming — Varsity Football Game',        category: 'sports' },
+    { date: '2026-10-17', time: '7:00 AM – 1:00 PM',   title: 'ACT Exam',                                  category: 'test' },
+    { date: '2026-10-17', time: '5:00 PM – 8:30 PM',   title: 'Homecoming Soccer (Boys & Girls Varsity)',  category: 'sports' },
+    { date: '2026-10-21', time: '7:00 PM – 8:30 PM',   title: 'Financial Aid Night',                       category: 'college' },
+    { date: '2026-10-24', time: null,                  title: 'HS Six Flags Trip',                         category: 'social' },
+    { date: '2026-11-05', time: '7:00 PM – 9:00 PM',   title: 'Careers in Business Night',                 category: 'college' },
+    { date: '2026-11-06', time: null,                  title: 'Fashion Show Rehearsal',                    category: 'social' },
+    { date: '2026-11-07', time: '7:00 AM – 1:00 PM',   title: 'SAT Exam',                                  category: 'test' },
+    { date: '2026-11-09', time: null,                  title: 'Fashion Show Rehearsal',                    category: 'social' },
+    { date: '2026-11-10', time: '6:30 PM – 7:30 PM',   title: 'PTA Senior Fashion Show',                   category: 'social' },
+    { date: '2026-12-03', time: '5:00 PM – 9:00 PM',   title: 'Holiday Basketball Tournament',              category: 'sports' },
+    { date: '2026-12-04', time: '5:00 PM – 9:00 PM',   title: 'Holiday Basketball Tournament',              category: 'sports' },
+    { date: '2026-12-05', time: '11:30 AM – 2:30 PM',  title: 'Holiday Basketball Tournament',              category: 'sports' },
+    { date: '2027-06-25', time: '7:00 PM',             title: 'Graduation Ceremony',                       category: 'milestone' }
+  ];
+  SENIOR_EVENTS.sort((a,b)=> a.date.localeCompare(b.date));
+
+  const loadEventsBtn = document.getElementById('loadEventsBtn');
+  const hideEventsBtn = document.getElementById('hideEventsBtn');
+  const eventsInline = document.getElementById('eventsInline');
+  const DOW = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let eventsRendered = false;
+
+  function renderEvents(){
+    if(eventsRendered) return;
+    let html = '';
+    let currentMonthKey = '';
+    SENIOR_EVENTS.forEach(ev=>{
+      const [y,m,d] = ev.date.split('-').map(Number);
+      const dateObj = new Date(y, m-1, d);
+      const monthKey = y+'-'+m;
+      if(monthKey !== currentMonthKey){
+        currentMonthKey = monthKey;
+        html += `<div class="events-month">${MONTHS[m-1]} ${y}</div>`;
+      }
+      const cat = EVENT_CATEGORIES[ev.category] || EVENT_CATEGORIES.social;
+      html += `
+        <div class="event-row${ev.category === 'milestone' ? ' highlight' : ''}">
+          <div class="event-date-chip">
+            <div class="dow">${DOW[dateObj.getDay()]}</div>
+            <div class="day">${d}</div>
+          </div>
+          <div class="event-row-info">
+            <div class="event-row-title">${ev.title}</div>
+            <div class="event-row-meta">${ev.time ? ev.time : 'All day'}</div>
+          </div>
+          <div class="event-row-icon" style="background:rgba(${cat.color},0.18); border-radius:8px; padding:5px 7px;">${cat.icon}</div>
+        </div>`;
+    });
+    eventsInline.innerHTML = html;
+    eventsRendered = true;
+  }
+
+  loadEventsBtn.addEventListener('click', ()=>{
+    renderEvents();
+    eventsInline.style.display = 'block';
+    hideEventsBtn.style.display = 'block';
+    loadEventsBtn.style.display = 'none';
+  });
+
+  hideEventsBtn.addEventListener('click', ()=>{
+    eventsInline.style.display = 'none';
+    hideEventsBtn.style.display = 'none';
+    loadEventsBtn.style.display = 'block';
+  });
+
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
+</script>
+
+</body>
+</html>
