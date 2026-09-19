@@ -63,8 +63,8 @@
     border-radius:50%;
     border:1px solid var(--glass-border);
     background:var(--glass);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -174,8 +174,8 @@
     border:1px solid var(--glass-border);
     padding:9px 20px;
     border-radius:999px;
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
   }
 
   h1{
@@ -215,8 +215,8 @@
     border:1px solid var(--glass-border);
     border-radius:28px;
     padding:26px 18px 22px;
-    backdrop-filter:blur(30px);
-    -webkit-backdrop-filter:blur(30px);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
     box-shadow:0 20px 60px rgba(0,0,0,0.35);
   }
 
@@ -304,8 +304,8 @@
     border:1px solid var(--glass-border);
     border-radius:24px;
     padding:18px 20px;
-    backdrop-filter:blur(30px);
-    -webkit-backdrop-filter:blur(30px);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -552,6 +552,49 @@
   }
   .modal-save:active{ transform:scale(0.97); }
 
+  .modal-link-btn{
+    margin-top:12px;
+    width:100%;
+    border:1px solid var(--glass-border);
+    outline:none;
+    background:rgba(255,255,255,0.04);
+    color:var(--text-secondary);
+    font-weight:700;
+    font-size:13px;
+    padding:12px 16px;
+    border-radius:13px;
+    cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .modal-link-btn:active{ transform:scale(0.97); }
+
+  .tip-step{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .tip-num{
+    flex-shrink:0;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:linear-gradient(135deg,rgb(var(--accent1-rgb)),rgb(var(--accent3-rgb)));
+    color:#fff;
+    font-size:13px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .tip-text{
+    font-size:13.5px;
+    line-height:1.5;
+    color:var(--text-primary);
+    padding-top:3px;
+  }
+  .tip-icon{ font-size:14px; }
+
   @media (max-width:360px){
     .num{ font-size:24px; }
   }
@@ -641,25 +684,52 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-card">
     <button class="modal-close" id="modalClose" aria-label="Close" style="display:none;">✕</button>
-    <div class="modal-icon">⚙️</div>
+    <div class="modal-icon">🎓</div>
     <div class="modal-title" id="modalTitle">Welcome!</div>
-    <div class="modal-sub" id="modalSub">Pick a theme and set your last exam/class date. Both are saved on your device.</div>
+    <div class="modal-sub" id="modalSub">This app counts down to your last exam/class and to graduation. Set it up below — everything is saved automatically on your device.</div>
 
     <div class="field-group">
-      <div class="field-label">🎨 Theme</div>
+      <div class="field-label">🎨 Pick a look</div>
       <div class="theme-row" id="themeRow"></div>
     </div>
 
     <div class="field-group">
-      <div class="field-label">📅 Date</div>
+      <div class="field-label">📅 Your last exam/class — date</div>
       <input type="date" class="field-input" id="lastDayDate">
     </div>
     <div class="field-group">
-      <div class="field-label">🕐 Time</div>
+      <div class="field-label">🕐 Your last exam/class — time</div>
       <input type="time" class="field-input" id="lastDayTime">
     </div>
 
-    <button type="button" class="modal-save" id="saveLastDay">Save</button>
+    <button type="button" class="modal-save" id="saveLastDay">Save & Continue</button>
+
+    <button type="button" class="modal-link-btn" id="openHomeTip">📲 How do I add this to my Home Screen?</button>
+  </div>
+</div>
+
+<!-- Add to Home Screen tutorial -->
+<div class="modal-overlay" id="homeTipOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="homeTipClose" aria-label="Close">✕</button>
+    <div class="modal-icon">📲</div>
+    <div class="modal-title">Add to your Home Screen</div>
+    <div class="modal-sub">Do this once and it opens just like a regular app — full screen, its own icon, no browser bar. Works in <strong>Safari</strong> on iPhone.</div>
+
+    <div class="tip-step">
+      <div class="tip-num">1</div>
+      <div class="tip-text">Open this page in <strong>Safari</strong>, then tap the <strong>Share</strong> button <span class="tip-icon">⬆️</span> at the bottom of the screen.</div>
+    </div>
+    <div class="tip-step">
+      <div class="tip-num">2</div>
+      <div class="tip-text">Scroll down the menu and tap <strong>"Add to Home Screen"</strong> <span class="tip-icon">➕</span>.</div>
+    </div>
+    <div class="tip-step">
+      <div class="tip-num">3</div>
+      <div class="tip-text">Tap <strong>"Add"</strong> in the top-right corner. That's it!</div>
+    </div>
+
+    <button type="button" class="modal-save" id="homeTipGotIt">Got it</button>
   </div>
 </div>
 
@@ -778,11 +848,11 @@
   function openModal(firstRun){
     if(firstRun){
       modalTitle.textContent = 'Welcome!';
-      modalSub.textContent = "Pick a theme and set the date/time of your last exam or class. Both are saved right on your device.";
+      modalSub.textContent = "This app counts down to your last exam/class and to graduation. Set it up below — everything is saved automatically on your device.";
       closeBtn.style.display = 'none';
     } else {
       modalTitle.textContent = 'Settings';
-      modalSub.textContent = "Change your theme or your last exam/class date. Saved on your device only.";
+      modalSub.textContent = "Change your look or your last exam/class date. Saved on your device only.";
       closeBtn.style.display = 'flex';
     }
     overlay.classList.add('show');
@@ -791,6 +861,24 @@
   function closeModal(){
     overlay.classList.remove('show');
   }
+
+  const homeTipOverlay = document.getElementById('homeTipOverlay');
+  const homeTipClose = document.getElementById('homeTipClose');
+  const homeTipGotIt = document.getElementById('homeTipGotIt');
+  const openHomeTipBtn = document.getElementById('openHomeTip');
+
+  function openHomeTip(){ homeTipOverlay.classList.add('show'); }
+  function closeHomeTip(){ homeTipOverlay.classList.remove('show'); }
+
+  openHomeTipBtn.addEventListener('click', ()=>{
+    closeModal();
+    openHomeTip();
+  });
+  homeTipClose.addEventListener('click', closeHomeTip);
+  homeTipGotIt.addEventListener('click', closeHomeTip);
+  homeTipOverlay.addEventListener('click', (e)=>{
+    if(e.target === homeTipOverlay) closeHomeTip();
+  });
 
   gearBtn.addEventListener('click', ()=> openModal(false));
   closeBtn.addEventListener('click', closeModal);
@@ -811,8 +899,12 @@
     const newDate = new Date(yy, mo-1, da, hh, mi, 0, 0);
     lastDay = newDate;
     saveLastDay(newDate);
+    const wasFirstRun = isFirstRunActive;
     isFirstRunActive = false;
     closeModal();
+    if(wasFirstRun){
+      setTimeout(openHomeTip, 350);
+    }
   });
 
   // ---- elements ----
